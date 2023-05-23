@@ -1,52 +1,38 @@
-const fs = require("fs/promises");
-const path = require("path");
-const { nanoid } = require("nanoid");
-const contactsPath = path.join(__dirname, "contacts.json");
+const contactsSchema = require("../models/contacsModel");
 
 const listContacts = async () => {
-  const data = await fs.readFile(contactsPath);
-  return JSON.parse(data);
+  const contacts = await contactsSchema.find();
+  return contacts;
 };
 
 const getContactById = async (contactId) => {
-  const contacts = await listContacts();
-  const contact = contacts.find((item) => item.id === contactId);
-  return contact || null;
+  return contactsSchema.findOne({
+    _id: contactId,
+  });
 };
 
 const removeContact = async (contactId) => {
-  const contacts = await listContacts();
-  const contact = contacts.findIndex((item) => item.id === contactId);
-  if (contact === -1) {
-    return null;
-  }
-  const deletedContact = contacts.splice(contact, 1);
-  await fs.writeFile(contactsPath, JSON.stringify(contacts));
-  return deletedContact;
+  return contactsSchema.findByIdAndRemove({ _id: contactId });
 };
 
-const addContact = async (name, email, phone) => {
-  const contacts = await listContacts();
-  const newContact = {
-    id: nanoid(),
-    name,
-    email,
-    phone,
-  };
-  contacts.push(newContact);
-  await fs.writeFile(contactsPath, JSON.stringify(contacts));
-  return newContact;
+const addContact = async (body) => {
+  return contactsSchema.create({ ...body });
 };
 
 const updateContact = async (contactId, body) => {
-  const contacts = await listContacts();
-  const contact = contacts.findIndex((item) => item.id === contactId);
-  if (contact === -1) {
-    return null;
-  }
-  contacts[contact] = { ...contacts[contact], ...body };
-  await fs.writeFile(contactsPath, JSON.stringify(contacts));
-  return contacts[contact];
+  return contactsSchema.findByIdAndUpdate(
+    { _id: contactId },
+    { ...body },
+    { new: true }
+  );
+};
+
+const updateStatusContact = async (contactId, favorite) => {
+  return contactsSchema.findByIdAndUpdate(
+    contactId,
+    { favorite },
+    { new: true }
+  );
 };
 
 module.exports = {
@@ -55,4 +41,5 @@ module.exports = {
   removeContact,
   addContact,
   updateContact,
+  updateStatusContact,
 };

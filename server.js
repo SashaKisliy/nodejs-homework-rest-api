@@ -1,7 +1,14 @@
 const app = require("./app");
+const dotenv = require("dotenv");
+const path = require("path");
+const connectDb = require("./config/connectDb");
 
-console.log("hi");
+const configPath = path.join(__dirname, "config", ".env");
 
-app.listen(3000, () => {
-  console.log("Server running. Use our API on port: 3000");
+dotenv.config({ path: configPath });
+
+connectDb();
+
+app.listen(process.env.PORT, () => {
+  console.log(`Server running. Use our API on port: ${process.env.PORT}`);
 });
