@@ -17,7 +17,7 @@ const loginUser = async (req, res) => {
 
     const isValidPassword = brypt.compareSync(password, user.password);
 
-    if (!user || !isValidPassword) {
+    if (!user || !isValidPassword || !user.verify) {
       return res
         .status(400)
         .json({ code: 400, message: "Invalid email or password" });

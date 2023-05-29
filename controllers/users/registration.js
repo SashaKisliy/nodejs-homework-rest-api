@@ -1,6 +1,8 @@
 const userModel = require("../../models/users/users");
 const brypt = require("bcryptjs");
 const gravatar = require("gravatar");
+const sendEmail = require("../../sendgrid/helpers/sendEmail");
+const { nanoid } = require("nanoid");
 
 const registrationUser = async (req, res) => {
   try {
@@ -20,13 +22,23 @@ const registrationUser = async (req, res) => {
         .json({ code: 409, message: `Email ${email} has been used` });
     }
 
+    const verificationToken = nanoid();
     const avatarUrl = gravatar.url(email);
     const hashPassword = brypt.hashSync(password, 10);
+
+    const mail = {
+      to: email,
+      subject: "Email verification",
+      html: `<a target="_blank" href="http://localhost:3000/api/users/verify/${verificationToken}">Please verify your email</a>`,
+    };
+
+    await sendEmail(mail);
 
     const newUser = await userModel.create({
       ...req.body,
       password: hashPassword,
       avatarUrl,
+      verificationToken,
     });
 
     if (!newUser) {
@@ -40,6 +52,7 @@ const registrationUser = async (req, res) => {
       message: "Success",
       data: { name: newUser.name, email: newUser.email },
       avatarUrl,
+      verificationToken,
     });
   } catch (error) {
     console.log(error.message);

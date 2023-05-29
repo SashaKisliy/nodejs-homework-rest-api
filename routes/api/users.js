@@ -11,5 +11,7 @@ router.post("/login", usersCntrl.loginUser);
 router.get("/logout", auth, usersCntrl.logoutUser);
 router.get("/current", auth, usersCntrl.currentUser);
 router.patch("/avatar", auth, upload.single("avatar"), usersCntrl.newAvatar);
+router.get("/verify/:verificationToken", usersCntrl.verification);
+router.post("/verify", usersCntrl.resendEmail);
 
 module.exports = router;
